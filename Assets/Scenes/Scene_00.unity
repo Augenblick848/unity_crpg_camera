@@ -3985,6 +3985,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CameraHorizontalAxis
       objectReference: {fileID: 0}
+    - target: {fileID: 7703821972100282964, guid: be5832ca45f443d4da0ecc785e68aee7, type: 3}
+      propertyPath: character
+      value: 
+      objectReference: {fileID: 144771490}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

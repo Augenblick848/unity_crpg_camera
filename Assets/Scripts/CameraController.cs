@@ -16,11 +16,13 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float skyHeight = 1000f;
     [SerializeField] private float mapWidth = 100f;
     [SerializeField] private float mapHeight = 100f;
+    [SerializeField] private float maxDistanceFromCharacter = 25f;
         
     [Header("Component References")]
     [SerializeField] private Transform horizontalAxisTransform;
     [SerializeField] private Transform verticalAxisTransform;
     [SerializeField] private Transform cameraTransform;
+    [SerializeField] private Transform character;
         
     private float _zoom = 1f;
     private float _cameraHeight;
@@ -68,6 +70,15 @@ public class CameraController : MonoBehaviour
                           horizontalAxisTransform.forward * (Input.GetAxis("Vertical") * Time.deltaTime * movingSpeed);
         _targetPosition.x = Mathf.Clamp(_targetPosition.x, 0f, mapHeight);
         _targetPosition.z = Mathf.Clamp(_targetPosition.z, 0f, mapWidth);
+
+        if (maxDistanceFromCharacter > 0f)
+        {
+            Vector3 position = character.position;
+            Vector3 allowedPosition = _targetPosition - position;
+            allowedPosition = Vector3.ClampMagnitude(allowedPosition, maxDistanceFromCharacter);
+            _targetPosition = position + allowedPosition;
+        }
+        
         _targetPosition.y = _cameraHeight;
     }
 
@@ -103,8 +114,10 @@ public class CameraController : MonoBehaviour
 
     private void CalculateCameraHeight()
     {
+        Vector3 position = horizontalAxisTransform.position;
+        
         bool skyRay = Physics.Raycast(
-            new Vector3(horizontalAxisTransform.position.x, skyHeight, horizontalAxisTransform.position.z), Vector3.down,
+            new Vector3(position.x, skyHeight, position.z), Vector3.down,
             out RaycastHit hit, Mathf.Infinity);
 
         if (skyRay)
