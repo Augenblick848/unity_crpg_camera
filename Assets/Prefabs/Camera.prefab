@@ -101,7 +101,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 148846311694291498}
-  - component: {fileID: 8599435277070958587}
+  - component: {fileID: 7703821972100282964}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -125,7 +125,7 @@ Transform:
   - {fileID: 864166462270356850}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8599435277070958587
+--- !u!114 &7703821972100282964
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -134,7 +134,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1593679700332391710}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a5847468401564c45822d70e5f03a769, type: 3}
+  m_Script: {fileID: 11500000, guid: 0fc772ce7d278bf4bb1be542c6e00d25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   interpolatingSpeed: 10
