@@ -3,23 +3,12 @@ using UnityEngine.AI;
 
 namespace Interactables
 {
-    public class PathInteractable : MonoBehaviour
+    public class PathInteractable : AbstractInteractable
     {
         [SerializeField] private NavMeshAgent characterAgent;
         
-        public void OnMouseUp()
+        public override void OnInteracted(RaycastHit hit)
         {
-            if (Camera.main == null)
-            {
-                return;
-            }
-            
-            if (!Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit,
-                    Mathf.Infinity))
-            {
-                return;
-            }
-            
             characterAgent.SetDestination(hit.point);
         }
     }

@@ -30,6 +30,11 @@ public class CameraController : MonoBehaviour
     private Quaternion _targetHorizontalRotation;
     private Quaternion _targetVerticalRotation;
 
+    public void TranslateCamera(Vector3 position)
+    {
+        horizontalAxisTransform.position = position;
+    }
+    
     private void Awake()
     {
         _targetPosition = new Vector3();
