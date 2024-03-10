@@ -3,27 +3,43 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     [Header("Interpolation Settings")]
+    [Range(1f, 20f)]
     [SerializeField] private float movementInterpolationSpeed = 10f;
+    [Range(1f, 20f)]
     [SerializeField] private float horizontalRotationInterpolationSpeed = 10f;
+    [Range(1f, 20f)]
     [SerializeField] private float verticalRotationInterpolationSpeed = 10f;
+    [Range(1f, 20f)]
     [SerializeField] private float zoomInterpolationSpeed = 10f;
     
     [Header("Vertical Rotation Calculation Settings")]
+    [Range(1f, 25f)]
     [SerializeField] private float cameraOffsetAngleCalculationDelta = 5f;
+    [Range(1f, 2f)]
     [SerializeField] private float cameraMaxZoomModifier = 1.5f;
+    [Range(5f, 45f)]
     [SerializeField] private float cameraBaseHorizontalAngle = 25f;
+    [Range(1f, 5f)]
     [SerializeField] private float cameraAngleInterpolationStep = 1f;
+    [Range(1f, 45f)]
     [SerializeField] private float cameraMaxAngleOffset = 45f;
     
     [Header("Speed Settings")]
+    [Range(1f, 1000f)]
     [SerializeField] private float movingSpeed = 100f;
+    [Range(1f, 1000f)]
     [SerializeField] private float rotationSpeed = 100f;
+    [Range(1f, 100f)]
     [SerializeField] private float zoomSpeed = 10f;
 
     [Header("Zoom Settings")]
+    [Range(1f, 20f)]
     [SerializeField] private float zoomDistanceMin = 10f;
+    [Range(1f, 40f)]
     [SerializeField] private float zoomDistanceMax = 20f;
+    [Range(1f, 90f)]
     [SerializeField] private float zoomAngleMin = 22.5f;
+    [Range(1f, 90f)]
     [SerializeField] private float zoomAngleMax = 45f;
     
     [Header("Map Settings")]
