@@ -2,18 +2,31 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    [Header("Camera Settings")]
-    [SerializeField] private float interpolatingSpeed = 10f;
+    [Header("Interpolation Settings")]
+    [SerializeField] private float movementInterpolationSpeed = 10f;
+    [SerializeField] private float horizontalRotationInterpolationSpeed = 10f;
+    [SerializeField] private float verticalRotationInterpolationSpeed = 10f;
+    [SerializeField] private float zoomInterpolationSpeed = 10f;
+    
+    [Header("Vertical Rotation Calculation Settings")]
+    [SerializeField] private float cameraOffsetAngleCalculationDelta = 5f;
+    [SerializeField] private float cameraMaxZoomModifier = 1.5f;
+    [SerializeField] private float cameraBaseHorizontalAngle = 25f;
+    [SerializeField] private float cameraAngleInterpolationStep = 1f;
+    [SerializeField] private float cameraMaxAngleOffset = 45f;
+    
+    [Header("Speed Settings")]
     [SerializeField] private float movingSpeed = 100f;
     [SerializeField] private float rotationSpeed = 100f;
     [SerializeField] private float zoomSpeed = 10f;
-    [SerializeField] private float zoomBaseDistance = 20f;
-    [SerializeField] private float zoomBaseAngle = 45f;
-    [SerializeField] private float zoomModifierMin = 0.5f;
-    [SerializeField] private float zoomModifierMax = 1f;
-    [SerializeField] private float angleOffsetStep = 1f;
-    [SerializeField] private float maxAngleOffset = 45f;
-    [SerializeField] private float skyHeight = 1000f;
+
+    [Header("Zoom Settings")]
+    [SerializeField] private float zoomDistanceMin = 10f;
+    [SerializeField] private float zoomDistanceMax = 20f;
+    [SerializeField] private float zoomAngleMin = 22.5f;
+    [SerializeField] private float zoomAngleMax = 45f;
+    
+    [Header("Map Settings")]
     [SerializeField] private float mapWidth = 100f;
     [SerializeField] private float mapHeight = 100f;
     [SerializeField] private float maxDistanceFromCharacter = 25f;
@@ -23,15 +36,21 @@ public class CameraController : MonoBehaviour
     [SerializeField] private Transform verticalAxisTransform;
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private Transform character;
-        
+    
     private float _zoom = 1f;
     private float _cameraHeight;
-        
+    private float _cameraAngleOffset;
+    
     private Vector3 _targetPosition;
     private Vector3 _targetCameraPosition;
     private Quaternion _targetHorizontalRotation;
     private Quaternion _targetVerticalRotation;
 
+    private const float SkyHeight = 1000f;
+    private const float CameraRayVerticalAngleOffset = 5f;
+    private const float CameraRayUpwardOriginOffset = 0.3f;
+    private const float CameraRayForwardOriginOffset = 1f;
+    
     public void TranslateCamera(Vector3 position)
     {
         horizontalAxisTransform.position = position;
@@ -91,19 +110,23 @@ public class CameraController : MonoBehaviour
     private void GetInputZoom()
     {
         _zoom += Input.mouseScrollDelta.y * Time.deltaTime * -zoomSpeed;
-        _zoom = Mathf.Clamp(_zoom, zoomModifierMin, zoomModifierMax);
-        _targetCameraPosition.z = -zoomBaseDistance * _zoom;
+        _zoom = Mathf.Clamp(_zoom, 0f, 1f);
+        _targetCameraPosition.z = Mathf.Lerp(zoomDistanceMin, zoomDistanceMax, _zoom) * -1f;
     }
         
     private void InterpolateTransforms()
     {
-        horizontalAxisTransform.position = Vector3.Lerp(transform.position, _targetPosition, Time.deltaTime * interpolatingSpeed);
+        horizontalAxisTransform.position = Vector3.Lerp(horizontalAxisTransform.position, _targetPosition,
+            Time.deltaTime * movementInterpolationSpeed);
+        
         horizontalAxisTransform.rotation = Quaternion.Lerp(horizontalAxisTransform.rotation,
-            _targetHorizontalRotation, Time.deltaTime * interpolatingSpeed);
+            _targetHorizontalRotation, Time.deltaTime * horizontalRotationInterpolationSpeed);
+        
         verticalAxisTransform.localRotation = Quaternion.Lerp(verticalAxisTransform.localRotation,
-            _targetVerticalRotation, Time.deltaTime * interpolatingSpeed);
-        cameraTransform.localPosition =
-            Vector3.Lerp(cameraTransform.localPosition, _targetCameraPosition, Time.deltaTime * interpolatingSpeed);
+            _targetVerticalRotation, Time.deltaTime * verticalRotationInterpolationSpeed);
+        
+        cameraTransform.localPosition = Vector3.Lerp(cameraTransform.localPosition,
+            _targetCameraPosition, Time.deltaTime * zoomInterpolationSpeed);
     }
 
     private void ProcessPhysics()
@@ -117,7 +140,7 @@ public class CameraController : MonoBehaviour
         Vector3 position = horizontalAxisTransform.position;
         
         bool skyRay = Physics.Raycast(
-            new Vector3(position.x, skyHeight, position.z), Vector3.down,
+            new Vector3(position.x, SkyHeight, position.z), Vector3.down,
             out RaycastHit hit, Mathf.Infinity);
 
         if (skyRay)
@@ -128,23 +151,55 @@ public class CameraController : MonoBehaviour
 
     private void CalculateVerticalRotation()
     {
-        float targetCameraAngle = zoomBaseAngle * _zoom;
-        float angleOffset = 0f;
+        Vector3 originPosition = horizontalAxisTransform.position + (horizontalAxisTransform.forward * CameraRayForwardOriginOffset) + (horizontalAxisTransform.up * CameraRayUpwardOriginOffset);
+        float targetCameraAngle = Mathf.Lerp(zoomAngleMin, zoomAngleMax, _zoom);
+        float cameraDistance = Vector3.Distance(horizontalAxisTransform.position, cameraTransform.position) + CameraRayVerticalAngleOffset * (cameraMaxZoomModifier - _zoom);
+        
+        bool downRay = CastRayFromPointByAngle(originPosition, targetCameraAngle - cameraOffsetAngleCalculationDelta + _cameraAngleOffset - CameraRayVerticalAngleOffset, 0f, cameraDistance);
+        bool downLeftRay = CastRayFromPointByAngle(originPosition, targetCameraAngle - cameraOffsetAngleCalculationDelta + _cameraAngleOffset, -cameraBaseHorizontalAngle * (cameraMaxZoomModifier - _zoom), cameraDistance);
+        bool downRightRay = CastRayFromPointByAngle(originPosition, targetCameraAngle - cameraOffsetAngleCalculationDelta + _cameraAngleOffset, cameraBaseHorizontalAngle * (cameraMaxZoomModifier - _zoom), cameraDistance);
+        
+        bool directRay = CastRayFromPointByAngle(originPosition, targetCameraAngle + _cameraAngleOffset - CameraRayVerticalAngleOffset, 0f, cameraDistance);
+        bool directLeftRay = CastRayFromPointByAngle(originPosition,  targetCameraAngle + _cameraAngleOffset, -cameraBaseHorizontalAngle * (cameraMaxZoomModifier - _zoom), cameraDistance);
+        bool directRightRay = CastRayFromPointByAngle(originPosition, targetCameraAngle + _cameraAngleOffset, cameraBaseHorizontalAngle * (cameraMaxZoomModifier - _zoom), cameraDistance);
+        
+        bool downRays = downRay || downLeftRay || downRightRay;
+        bool directRays = directRay || directLeftRay || directRightRay;
 
-        while (angleOffset < maxAngleOffset)
+        if (downRays && !directRays)
         {
-            Vector3 directionWithAngle = Quaternion.AngleAxis(targetCameraAngle + angleOffset, transform.right) *
-                                         (transform.forward * -1);
-            bool cameraRay = Physics.Raycast(horizontalAxisTransform.position, directionWithAngle, Mathf.Infinity);
-
-            if (!cameraRay)
-            {
-                break;
-            }
-
-            angleOffset += angleOffsetStep;
+            SetTargetVerticalRotation(targetCameraAngle);
+            return;
         }
 
-        _targetVerticalRotation = Quaternion.Euler(targetCameraAngle + angleOffset, 0, 0);
+        if (!downRays && !directRays)
+        {
+            _cameraAngleOffset -= cameraAngleInterpolationStep;
+            SetTargetVerticalRotation(targetCameraAngle);
+            return;
+        }
+
+        if (!downRays)
+        {
+            return;
+        }
+        
+        _cameraAngleOffset += cameraAngleInterpolationStep;
+        SetTargetVerticalRotation(targetCameraAngle);
+    }
+
+    private void SetTargetVerticalRotation(float targetCameraAngle)
+    {
+        _cameraAngleOffset = Mathf.Clamp(_cameraAngleOffset, 0, cameraMaxAngleOffset);
+        _targetVerticalRotation = Quaternion.Euler(targetCameraAngle + _cameraAngleOffset, 0, 0);
+    }
+
+    private bool CastRayFromPointByAngle(Vector3 fromPosition, float verticalAngle, float horizontalAngle, float distance)
+    {
+        Vector3 directionWithOffset = Quaternion.AngleAxis(verticalAngle, horizontalAxisTransform.right) *
+                                        Quaternion.AngleAxis(horizontalAngle, horizontalAxisTransform.up) *
+                                           (horizontalAxisTransform.forward * -1);
+        
+        return Physics.Raycast(fromPosition, directionWithOffset, distance);
     }
 }

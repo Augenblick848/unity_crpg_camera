@@ -137,22 +137,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fc772ce7d278bf4bb1be542c6e00d25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interpolatingSpeed: 10
-  movingSpeed: 100
+  movementInterpolationSpeed: 2
+  horizontalRotationInterpolationSpeed: 10
+  verticalRotationInterpolationSpeed: 2
+  zoomInterpolationSpeed: 10
+  cameraOffsetAngleCalculationDelta: 5
+  cameraMaxZoomModifier: 1.5
+  cameraBaseHorizontalAngle: 25
+  cameraAngleInterpolationStep: 1
+  cameraMaxAngleOffset: 45
+  movingSpeed: 500
   rotationSpeed: 100
   zoomSpeed: 10
-  zoomBaseDistance: 20
-  zoomBaseAngle: 45
-  zoomModifierMin: 0.5
-  zoomModifierMax: 1
-  angleOffsetStep: 12
-  maxAngleOffset: 120
-  skyHeight: 1000
+  zoomDistanceMin: 10
+  zoomDistanceMax: 20
+  zoomAngleMin: 22.5
+  zoomAngleMax: 45
   mapWidth: 100
   mapHeight: 100
+  maxDistanceFromCharacter: 25
   horizontalAxisTransform: {fileID: 148846311694291498}
   verticalAxisTransform: {fileID: 864166462270356850}
   cameraTransform: {fileID: 4444243314345713877}
+  character: {fileID: 0}
 --- !u!1 &1883970790496538399
 GameObject:
   m_ObjectHideFlags: 0
